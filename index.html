@@ -9,9 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-</head>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"></head>
 
-<body>
+<body class="enhanced">
   <header class="navbar">
     <div class="container nav-inner">
       <a href="#home" class="logo">Tushar <span>Sarap</span></a>
@@ -47,13 +47,15 @@
             <a class="btn primary" href="#projects">View My Projects →</a>
             <a class="text-btn" href="https://github.com/TusharSarap" target="_blank" rel="noopener">GitHub ↗</a>
             <a class="text-btn" href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn ↗</a>
-            <a class="text-btn" href="resume.pdf" target="_blank">Resume ↗</a>
+            <a class="text-btn" href="resume.pdf" download>Resume ↗</a>
           </div>
         </div>
 
         <div class="hero-visual">
-          <div class="avatar">
-            <span>TS</span>
+          <div class="avatar photo-frame">
+            <img src="profile.jpg" alt="Tushar Sarap"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='grid';">
+            <div class="photo-placeholder"><strong>TS</strong><small>Add profile.jpg</small></div>
           </div>
           <div class="code-card">
             <span>// Better code</span>
@@ -257,5 +259,87 @@
       link.addEventListener("click", () => nav.classList.remove("open"));
     });
   </script>
+
+<script>
+(() => {
+  // Typing effect
+  const target = document.querySelector("#typing");
+  if (target) {
+    const words = ["C++ Developer","Embedded Software Engineer","Automotive Developer","Problem Solver"];
+    let w = 0, i = 0, deleting = false;
+    function type() {
+      const word = words[w];
+      target.textContent = word.slice(0, i);
+      if (!deleting) {
+        i++;
+        if (i > word.length) { deleting = true; return setTimeout(type, 1200); }
+      } else {
+        i--;
+        if (i < 0) { deleting = false; i = 0; w = (w + 1) % words.length; return setTimeout(type, 350); }
+      }
+      setTimeout(type, deleting ? 42 : 82);
+    }
+    type();
+  }
+
+  // Scroll reveal
+  const reveal = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add("visible");
+        reveal.unobserve(e.target);
+      }
+    });
+  }, {threshold:.08});
+  document.querySelectorAll("section, .skill-card, .project-card, .experience-card").forEach(e => {
+    e.classList.add("reveal");
+    reveal.observe(e);
+  });
+
+  // Cursor glow
+  const glow = document.createElement("div");
+  glow.className = "cursor-glow";
+  document.body.appendChild(glow);
+  addEventListener("pointermove", e => {
+    glow.style.transform = `translate(${e.clientX-150}px,${e.clientY-150}px)`;
+  });
+
+  // Dynamic GitHub cards
+  const box = document.querySelector("#github-projects");
+  if (box) {
+    fetch("https://api.github.com/users/TusharSarap/repos?sort=updated&per_page=6")
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(repos => {
+        box.innerHTML = "";
+        repos.forEach(repo => {
+          const card = document.createElement("article");
+          card.className = "project-card reveal visible";
+          card.innerHTML = `
+            <div class="repo-head">
+              <span class="repo-icon">${repo.language || "DEV"}</span>
+              <a href="${repo.html_url}" target="_blank" rel="noopener">↗</a>
+            </div>
+            <h3>${repo.name.replaceAll("-", " ")}</h3>
+            <p>${repo.description || "A project from my GitHub portfolio."}</p>
+            <div class="repo-meta">
+              <span>${repo.language || "Code"}</span>
+              <span>★ ${repo.stargazers_count}</span>
+              <span>⑂ ${repo.forks_count}</span>
+            </div>`;
+          box.appendChild(card);
+        });
+        if (!repos.length) box.innerHTML = '<p>No public repositories found yet.</p>';
+      })
+      .catch(() => {
+        box.innerHTML = '<p>GitHub projects are available on <a href="https://github.com/TusharSarap" target="_blank">GitHub ↗</a>.</p>';
+      });
+  }
+
+  // Mobile navigation
+  const button = document.querySelector(".menu-toggle");
+  const nav = document.querySelector(".nav-links");
+  if (button && nav) button.addEventListener("click", () => nav.classList.toggle("open"));
+})();
+</script>
 </body>
 </html>
